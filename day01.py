@@ -1,7 +1,13 @@
 from time import perf_counter as pfc
 
 #
-i = [l for l in open("day01.txt", "r").read().strip().split("\n\n")]
+i = [
+    l
+    for l in open("./puzzle_inputs/day01.txt", "r")
+    .read()
+    .strip()
+    .split("\n\n")
+]
 cal_sums = [sum(map(int, cal.splitlines())) for cal in i]
 #
 
