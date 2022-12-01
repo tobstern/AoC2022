@@ -10,6 +10,7 @@ start1 = pfc()
 biggest = sorted(cal_sums)[-1]
 print(f"Part 1 result is: {biggest}, t = {pfc() - start1}")
 
+#
 # Part 2:
 start2 = pfc()
 big_three = sum(sorted(cal_sums)[-3:])
