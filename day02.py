@@ -4,7 +4,10 @@ from time import perf_counter as pfc
 class RockPaperScissors:
     def __init__(self):
         self.mapping = {}
-        self.points = 0
+        self.score1 = 0
+        self.score2 = 0
+        # aim is the state of outcome (for part 2):
+        # X := loose, Y := draw, Z := win
         # player 0 encrypted roles
         self.mapping["A"] = "rock"
         self.mapping["B"] = "paper"
@@ -17,16 +20,16 @@ class RockPaperScissors:
     def rules(self, char0, char1):
         draw = False
         if self.mapping[char1] == "rock":
-            self.points += 1
+            self.score1 += 1
         elif self.mapping[char1] == "paper":
-            self.points += 2
+            self.score1 += 2
         elif self.mapping[char1] == "scissors":
-            self.points += 3
+            self.score1 += 3
         # checking the player's hands
         if self.mapping[char0] == self.mapping[char1]:
             print("draw!")
             draw = True
-            self.points += 3
+            self.score1 += 3
         if (
             (
                 self.mapping[char0] == "rock"
@@ -44,12 +47,49 @@ class RockPaperScissors:
             print("Player Two loses!")
         elif not draw:
             print("Player Two wins!")
-            self.points += 6
-        print(self.points)
+            self.score1 += 6
+
+    def rules2(self, char0, char1):
+        if char1 == "X":
+            # aim is to loose
+            if self.mapping[char0] == "rock":
+                # choose scissors:
+                self.score2 += 3
+            elif self.mapping[char0] == "scissors":
+                # choose paper:
+                self.score2 += 2
+            elif self.mapping[char0] == "paper":
+                # choose rock:
+                self.score2 += 1
+        elif char1 == "Y":
+            # aim is to draw
+            self.score2 += 3
+            if self.mapping[char0] == "rock":
+                # choose rock:
+                self.score2 += 1
+            elif self.mapping[char0] == "scissors":
+                # choose scissors:
+                self.score2 += 3
+            elif self.mapping[char0] == "paper":
+                # choose paper:
+                self.score2 += 2
+        elif char1 == "Z":
+            # aim is to win
+            self.score2 += 6
+            if self.mapping[char0] == "rock":
+                # choose paper:
+                self.score2 += 2
+            elif self.mapping[char0] == "scissors":
+                # choose rock:
+                self.score2 += 1
+            elif self.mapping[char0] == "paper":
+                # choose scissors:
+                self.score2 += 3
 
     def play(self, guide):
         for char0, char1 in guide:
             RockPaperScissors.rules(self, char0, char1)
+            RockPaperScissors.rules2(self, char0, char1)
 
 
 day = "02"
@@ -72,10 +112,7 @@ print(i)
 start1 = pfc()
 game = RockPaperScissors()
 game.play(i)
-print(f"Part 1 result is: {game.points}, t = {pfc() - start1}")
+print(f"Part 1 result is: {game.score1}, t = {pfc() - start1}")
 
 # Part 2:
-start2 = pfc()
-print(f"Part 2 result is: {day}, t = {pfc() - start2}")
-
-# part1: 22880 too high,
+print(f"Part 2 result is: {game.score2}, t = {pfc() - start1}")
