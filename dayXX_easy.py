@@ -4,6 +4,8 @@ day = ""
 test = 1
 if test:
     t = "test_"
+else:
+    t = ""
 #
 i = [
     l.split(" ")

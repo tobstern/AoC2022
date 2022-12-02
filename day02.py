@@ -5,8 +5,6 @@ class RockPaperScissors:
     def __init__(self):
         self.mapping = {}
         self.points = 0
-        self.won = False
-        self.result = 0
         # player 0 encrypted roles
         self.mapping["A"] = "rock"
         self.mapping["B"] = "paper"
@@ -17,15 +15,17 @@ class RockPaperScissors:
         self.mapping["Z"] = "scissors"
 
     def rules(self, char0, char1):
+        draw = False
         if self.mapping[char1] == "rock":
             self.points += 1
-        if self.mapping[char1] == "paper":
+        elif self.mapping[char1] == "paper":
             self.points += 2
-        if self.mapping[char1] == "scissors":
+        elif self.mapping[char1] == "scissors":
             self.points += 3
         # checking the player's hands
         if self.mapping[char0] == self.mapping[char1]:
             print("draw!")
+            draw = True
             self.points += 3
         if (
             (
@@ -42,9 +42,10 @@ class RockPaperScissors:
             )
         ):
             print("Player Two loses!")
-        else:
+        elif not draw:
             print("Player Two wins!")
             self.points += 6
+        print(self.points)
 
     def play(self, guide):
         for char0, char1 in guide:
@@ -52,9 +53,11 @@ class RockPaperScissors:
 
 
 day = "02"
-test = 1
+test = 0
 if test:
     t = "test_"
+else:
+    t = ""
 #
 i = [
     l.split(" ")
