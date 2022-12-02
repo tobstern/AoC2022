@@ -1,13 +1,16 @@
 from time import perf_counter as pfc
 
 day = ""
+test = 1
+if test:
+    t = "test_"
 #
 i = [
-    l
-    for l in open("./puzzle_inputs/day" + day + ".txt", "r")
+    l.split(" ")
+    for l in open("./puzzle_inputs/" + t + "day" + day + ".txt", "r")
     .read()
     .strip()
-    .split()
+    .splitlines()
 ]
 print(i)
 
