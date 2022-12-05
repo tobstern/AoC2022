@@ -53,7 +53,7 @@ instr = [
 # Part 1:
 start1 = pfc()
 crates1 = deepcopy(crates_ini)
-for j, l in enumerate(instr):
+for l in instr:
     # move x times a crate from start to aim
     x, start, aim = l[0], l[1][0], l[1][1]
     # before adding, reverse the list of crates that are to be
@@ -67,7 +67,7 @@ print(f"Part 1 result is: {message1}, t = {pfc() - start1}")
 # Part 2:
 start2 = pfc()
 crates2 = deepcopy(crates_ini)
-for j, l in enumerate(instr):
+for l in instr:
     # move x times a crate from start to aim
     x, start, aim = l[0], l[1][0], l[1][1]
     # before adding, reverse the list of crates that are to be
