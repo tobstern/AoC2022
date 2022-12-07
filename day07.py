@@ -78,10 +78,10 @@ start2 = pfc()
 # find "smallest" directory that frees up enough space
 # to have > 30,000,000:
 max_space = int(70e6)
-space_lim = int(30e6)
+least_space = int(30e6)
 used_space = siz[0]
 available_space = max_space - used_space
-needed_space = space_lim - available_space
+needed_space = least_space - available_space
 for d, fs in dirs.items():
     # find size of all directories (reuse siz of part 1)
     dsize = min([s for s in siz if s > needed_space])
