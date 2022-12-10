@@ -104,7 +104,6 @@ def moveT2(Hpos, Tposes):
                 else 0
                 for p in [0, 1]
             ]
-            # print(f"The unit vector is: {vec}")
             Tposes[T] += [tuple(Tpos[-1][p] + vec[p] for p in [0, 1])]
             # print(f"The updated Tpositions are: {Tpos}")
         else:
