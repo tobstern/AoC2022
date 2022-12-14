@@ -88,6 +88,7 @@ print(f"Part 1 result is: {res1}, t = {pfc() - start1}")
 
 # Part 2:
 start2 = pfc()
+# just test all packets against [[2]] and [[6]] and multiply the "indices":
 decoder_key = (
     1 + sum(1 for item in all_pairs if compare(item, [[2]]) == 1)
 ) * (2 + sum(1 for item in all_pairs if compare(item, [[6]]) == 1))
