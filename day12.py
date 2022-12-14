@@ -168,7 +168,7 @@ dest = list(flat_hmap).index(27)
 create_graph()
 print(graph)
 
-# through all nodes
+# through all nodes (position as tuples( ))
 # (i, j) => node = i * width + j
 dijkstras(graph, root, dest)
 
