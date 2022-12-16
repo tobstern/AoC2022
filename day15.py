@@ -11,8 +11,8 @@ else:
 #
 SBs = [
     [
-        list(map(int, re.findall(r"[0-9]+", l.split(":")[0]))),
-        list(map(int, re.findall(r"[0-9]+", l.split(":")[1]))),
+        list(map(int, re.findall(r"-?[0-9]+", l.split(":")[0]))),
+        list(map(int, re.findall(r"-?[0-9]+", l.split(":")[1]))),
     ]
     for l in open("./puzzle_inputs/" + t + "day" + day + ".txt", "r")
     .read()
