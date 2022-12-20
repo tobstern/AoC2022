@@ -1,9 +1,10 @@
 from time import perf_counter as pfc
 import numpy as np
 from tqdm import trange
+from math import lcm
 
 day = "17"
-test = 0
+test = 1
 if test:
     t = "test_"
 else:
@@ -43,6 +44,9 @@ class Tetris:
         jetlen = len(jets)
         jet_pointer = 0
         rock_pointer = 0
+        cycle = lcm(jetlen, 5)
+        heights = []
+        print(f"the cycle is: {cycle}!")
         # posses = [
         #     (i, j) for i, j in zip(self.highest_pos.copy(), range(7))
         # ]
@@ -78,12 +82,6 @@ class Tetris:
                 # if not possible -> stop
                 cur_rock_poss = rock_poss.copy()
                 horizontal_move = jets[jet_pointer % jetlen]
-                cycle_happend = (
-                    jet_pointer % jetlen == 0 and rock_pointer % 5 == 0
-                )
-                print(
-                    f"the cycle started newly!"
-                ) if cycle_happend else None
                 # l_or_r = (
                 #     "right"
                 #     if jets[jet_pointer % jetlen] == 1
@@ -143,6 +141,32 @@ class Tetris:
                         rock_poss += [(pos[0] - 1, pos[1])]
 
             # print(f"highest positions: {self.highest_pos}\n")
+            heights += [max(self.highest_pos)]
+            if len(heights) == 4 * (cycle - 5):
+                # find offset and cycle:
+                window = cycle - 5
+                heights = np.array(heights)
+                h_diff = (
+                    heights[1 : 4 * window] - heights[: 4 * window - 1]
+                )
+                offset = 0
+                for o in range(3 * window):
+                    is_cycle = (
+                        h_diff[o : o + window]
+                        == h_diff[o + window : o + 2 * window]
+                    )
+                    offset = o if np.all(is_cycle) else 0
+                    if offset > 0:
+                        break
+                print("Offset is", offset)
+                print(h_diff[offset : offset + window])
+                print(h_diff[offset + window : offset + 2 * window])
+                # one window has the count:
+                one_win_cnt = np.sum(h_diff[offset : offset + window])
+                # only need to count the heights for the offsets:
+                # self.highest_pos = [i+]
+
+            # print(f"Current height is: {heights[-1]}")
             rock_pointer += 1
         # h = np.max(posses) + 1
         # grid = np.array([["."] * 7] * (h))
@@ -150,8 +174,11 @@ class Tetris:
         #     grid[h - 2 - pos[0], pos[1]] = "#"
         # print(grid)
         # np.max(self.highest_pos) - 1
-        # return max(max(posses)) - 2
-        return max(self.highest_pos) - 2
+        # print("Jet length is:", jetlen)
+        # print("LCM is:", cycle)
+
+        # return max(max(posses)) - 1
+        return np.max(self.highest_pos) - 1
 
 
 # Part 1:
@@ -160,10 +187,9 @@ Game = Tetris(rock_count=2022)
 # Game = Tetris(rock_count=9)
 # print(Game.move(jets))
 print(f"Part 1 result is: {Game.move(jets)}, t = {pfc() - start1}")
-# 3158 too high
 
 # Part 2:
 start2 = pfc()
-rock_count = 1000000000000
-Game = Tetris(rock_count)
-print(f"Part 2 result is: {Game.move(jets)}, t = {pfc() - start2}")
+# rock_count = 1000000000000
+# Game = Tetris(rock_count)
+# print(f"Part 2 result is: {Game.move(jets)}, t = {pfc() - start2}")
