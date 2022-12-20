@@ -3,7 +3,7 @@ import numpy as np
 from collections import defaultdict as dd
 import sys
 
-print(sys.getrecursionlimit())
+# print(sys.getrecursionlimit())
 sys.setrecursionlimit(10000)
 
 day = "12"
@@ -91,11 +91,12 @@ def create_graph():
 def get_path(adj_nodes, node, c):
     # recursively call adjacent nodes till reaching aim:
     # return count
-    print(adj_nodes[node])
-    if adj_nodes[node] == None:
+    # print(adj_nodes[node])
+    if node == root:  # | adj_nodes[node] == None:
         return c
     c += 1
-    get_path(adj_nodes, adj_nodes[node], c)
+    c = get_path(adj_nodes, adj_nodes[node], c)
+    return c
 
 
 def dijkstras(graph, root, dest):
@@ -114,7 +115,7 @@ def dijkstras(graph, root, dest):
         min_val = paths[lowest_n]
         # loop through all elements in queue
         for n in range(1, len(queue)):
-            if paths[queue[n]] <= min_val + 1:
+            if paths[queue[n]] < min_val:
                 lowest_n = queue[n]
                 min_val = paths[lowest_n]
         cur = lowest_n
@@ -130,8 +131,8 @@ def dijkstras(graph, root, dest):
             # print("Graph @ cur", graph[cur])
             alternate = paths[cur] + graph[cur][neigh]
             if paths[neigh] > alternate:
-                print(paths[neigh])
-                if graph[cur][neigh] <= 1:
+                # print(paths[neigh])
+                if graph[cur][neigh] < 2:
                     paths[neigh] = alternate
                     adj_nodes[neigh] = cur
                     # c += 1 if cur not in seen else 0
@@ -149,7 +150,7 @@ def dijkstras(graph, root, dest):
     #         break
     #     # print(x, end="<-")
     #     c += 1 if x != (0, 0) else -1
-    print(adj_nodes)
+    # print(adj_nodes)
     return get_path(adj_nodes, dest, 0)
 
 
@@ -180,10 +181,10 @@ dest = [
 ][0]
 hmap[root[0]][root[1]] = 0
 hmap[dest[0]][dest[1]] = 25
-print(root, dest)
+# print(root, dest)
 
 create_graph()
-print(graph)
+# print(graph)
 create_graph_time = pfc()
 
 # through all nodes (position as tuples( ))
