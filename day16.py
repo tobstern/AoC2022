@@ -119,6 +119,7 @@ start2 = pfc()
 b = (1 << len(nonempty)) - 1
 m = 0  # maximum
 # elephant and me are not distinguashable -> only need to compute half the bits
+#   -> just one second faster
 
 for i in range((b + 1) // 2):
     m = max(m, dfs(26, "AA", i) + dfs(26, "AA", b ^ i))
