@@ -1,10 +1,7 @@
 from time import perf_counter as pfc
-import numpy as np
-from tqdm import trange
-from math import lcm
 
 day = "17"
-test = 1
+test = 0
 if test:
     t = "test_"
 else:
@@ -17,179 +14,123 @@ jets = [
     .strip()
 ]
 
+# rocks with complex numbers (imaginary part for the height)
+rocks = [
+    [0, 1, 2, 3],
+    [1, 1j, 1 + 1j, 2 + 1j, 1 + 2j],
+    [0, 1, 2, 2 + 1j, 2 + 2j],
+    [0, 1j, 2j, 3j],
+    [0, 1, 1j, 1 + 1j],
+]
 
-class Tetris:
-    # rock types: -(1,4), +(3,3), L(mirrored-3,3), I(4,1), square(2,2)
-    # chamber width = 7
-    # rocks start @ 2 from left wall + 3 above floor|highest stone
-    # rocks are pushed by jet (left|right), then falling one unit down
-    #   -stops when next move down would be rock (+ becomes solid "#"),
-    #       -and a new rock starts
-    def __init__(self, rock_count):
-        # initial chamber size (walls -> left bottom corner @ 0,0)
-        self.chamber_width = 7
-        # all rock shapes as list
-        self.rocks = [
-            [1, 1, 1, 1],
-            [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
-            # this has no rotation symmetrie -> coordinates are-> x=i, y=-j
-            [[1, 1, 1], [0, 0, 1], [0, 0, 1]],
-            [[1], [1], [1], [1]],
-            [[1, 1], [1, 1]],
-        ]
-        self.highest_pos = [-1] * 7
-        self.stones = rock_count
 
-    def move(self, jets):
-        jetlen = len(jets)
-        jet_pointer = 0
-        rock_pointer = 0
-        cycle = lcm(jetlen, 5)
-        heights = []
-        print(f"the cycle is: {cycle}!")
-        # posses = [
-        #     (i, j) for i, j in zip(self.highest_pos.copy(), range(7))
-        # ]
-        posses = set(
-            (i, j) for i, j in zip(self.highest_pos.copy(), range(7))
-        )
-        # print(posses)
-        while self.stones >= 0:
-            # for _ in trange(self.stones):
-            # move one stone:
-            self.stones -= 1
-            # print(self.stones)
-            stop = False
-            rock = self.rocks[rock_pointer % 5]
-            # print(f"Current rock is: \n{np.array(rock)}")
-            # first rock is just one list:
-            if type(rock[0]) == list:
-                rock_poss = [
-                    (i, j)
-                    for i in range(len(rock))
-                    for j in range(len(rock[0]))
-                    if rock[i][j] == 1
-                ]
-            else:
-                rock_poss = [(0, j) for j in range(len(rock))]
-            rock_poss = [
-                (i + max(self.highest_pos) + 4, j + 2)
-                for (i, j) in rock_poss
-            ]
-            # print("The starting rock poss:", rock_poss)
-            while not stop:
-                # move one by jet and one down,
-                # if not possible -> stop
-                cur_rock_poss = rock_poss.copy()
-                horizontal_move = jets[jet_pointer % jetlen]
-                # l_or_r = (
-                #     "right"
-                #     if jets[jet_pointer % jetlen] == 1
-                #     else "left"
-                # )
-                # print(f"Jet pushes: {l_or_r}")
-                jet_pointer += 1
-                # move rock horizontally
-                rock_poss = []
-                for (i, j) in cur_rock_poss:
-                    if (
-                        j + horizontal_move < 0
-                        or j + horizontal_move > 6
-                        or (i, j + horizontal_move) in posses
-                        # or self.highest_pos[j + horizontal_move] >= i
-                    ):
-                        rock_poss = cur_rock_poss.copy()
-                        break
-                    else:
-                        rock_poss += [(i, j + horizontal_move)]
-                cur_rock_poss = rock_poss.copy()
-                # print(
-                #     f"Current rock poss after 'hor' move: {cur_rock_poss}"
-                # )
-                # move rock vertically
-                rock_poss = []
-                # cur_heights = self.highest_pos
-                for pos in cur_rock_poss:
-                    if (
-                        (pos[0] - 1, pos[1])
-                        in posses
-                        # self.highest_pos[pos[1]]
-                        # == pos[0] - 1
-                        # or pos[0] - 1 <= 0
-                    ):
-                        stop = True
-                        # highest = self.highest_pos.copy()
-                        # print(f"When stopped moving: {cur_rock_poss}")
-                        for (i, j) in cur_rock_poss:
-                            # print(f"before stopping: (i={i}, j={j})")
-                            if self.highest_pos[j] < i:
-                                self.highest_pos[j] = i
-                        # print(
-                        #     "When stopped moving - highest 'floor' poss:",
-                        #     self.highest_pos,
-                        # )
-                        posses |= set(cur_rock_poss)
-                        # posses -= set(list(sorted(posses))[:2])
-                        # posses += cur_rock_poss
-                        # posses = [
-                        #     (i, j)
-                        #     for i, j in posses
-                        #     if i >= self.highest_pos[j]
-                        # ]
-                        break
-                    else:
-                        rock_poss += [(pos[0] - 1, pos[1])]
-
-            # print(f"highest positions: {self.highest_pos}\n")
-            heights += [max(self.highest_pos)]
-            if len(heights) == 4 * (cycle - 5):
-                # find offset and cycle:
-                window = cycle - 5
-                heights = np.array(heights)
-                h_diff = (
-                    heights[1 : 4 * window] - heights[: 4 * window - 1]
-                )
-                offset = 0
-                for o in range(3 * window):
-                    is_cycle = (
-                        h_diff[o : o + window]
-                        == h_diff[o + window : o + 2 * window]
-                    )
-                    offset = o if np.all(is_cycle) else 0
-                    if offset > 0:
-                        break
-                print("Offset is", offset)
-                print(h_diff[offset : offset + window])
-                print(h_diff[offset + window : offset + 2 * window])
-                # one window has the count:
-                one_win_cnt = np.sum(h_diff[offset : offset + window])
-                # only need to count the heights for the offsets:
-                # self.highest_pos = [i+]
-
-            # print(f"Current height is: {heights[-1]}")
-            rock_pointer += 1
-        # h = np.max(posses) + 1
-        # grid = np.array([["."] * 7] * (h))
-        # for pos in posses:
-        #     grid[h - 2 - pos[0], pos[1]] = "#"
-        # print(grid)
-        # np.max(self.highest_pos) - 1
-        # print("Jet length is:", jetlen)
-        # print("LCM is:", cycle)
-
-        # return max(max(posses)) - 1
-        return np.max(self.highest_pos) - 1
-
+solid = {x - 1j for x in range(7)}
+height = 0
 
 # Part 1:
 start1 = pfc()
-Game = Tetris(rock_count=2022)
-# Game = Tetris(rock_count=9)
-# print(Game.move(jets))
-print(f"Part 1 result is: {Game.move(jets)}, t = {pfc() - start1}")
+rc = 0
+
+ri = 0  # rock index
+# rock starts @ x+2 and y+3 (here y is imaginary)
+rock = {x + 2 + (height + 3) * 1j for x in rocks[ri]}
+
+while rc < 2022:
+    for jet in jets:
+        # move the rock by the jet
+        moved = {x + jet for x in rock}
+        # check bounds -> if move possible: rock = moved
+        if all(0 <= x.real < 7 for x in moved) and not (moved & solid):
+            rock = moved
+        # try to move down:
+        moved = {x - 1j for x in rock}
+        # is move down possible:
+        if moved & solid:
+            solid |= rock
+            # when rock gets solid -> update rock_count
+            rc += 1
+            # update the height to highest rock (first layer is row 0)
+            height = max(x.imag for x in solid) + 1
+            # when reached limit of rocks
+            if rc >= 2022:
+                break
+            ri = (ri + 1) % 5
+            # set coordinates of the next rock
+            rock = {x + 2 + (height + 3) * 1j for x in rocks[ri]}
+        else:
+            rock = moved
+
+
+print(f"Part 1 result is: {int(height)}, t = {pfc() - start1}")
+
 
 # Part 2:
 start2 = pfc()
-# rock_count = 1000000000000
-# Game = Tetris(rock_count)
-# print(f"Part 2 result is: {Game.move(jets)}, t = {pfc() - start2}")
+solid = {x - 1j for x in range(7)}
+height = 0
+
+
+def summarize():
+    # look what height the top rock each column is
+    o = [-20] * 7
+
+    for x in solid:
+        r = int(x.real)
+        i = int(x.imag)
+        o[r] = max(o[r], i)
+
+    top = max(o)
+    return tuple(x - top for x in o)
+
+
+rc = 0
+
+ri = 0  # rock index
+# rock starts @ x+2 and y+3 (here y is imaginary)
+rock = {x + 2 + (height + 3) * 1j for x in rocks[ri]}
+
+T = int(1e12)
+
+seen = {}
+while rc < T:
+    for ji, jet in enumerate(jets):
+        # move the rock by the jet
+        moved = {x + jet for x in rock}
+        # check bounds -> if move possible: rock = moved
+        if all(0 <= x.real < 7 for x in moved) and not (moved & solid):
+            rock = moved
+        # try to move down:
+        moved = {x - 1j for x in rock}
+        # is move down possible?
+        if moved & solid:
+            solid |= rock
+            # when rock gets solid -> update rock_count
+            rc += 1
+            # update the height to highest rock (first layer is row 0)
+            height = max(x.imag for x in solid) + 1
+            # when reached limit of rocks
+            if rc >= T:
+                break
+            ri = (ri + 1) % 5
+            # set coordinates of the next rock
+            rock = {x + 2 + (height + 3) * 1j for x in rocks[ri]}
+            # save a key to memorize + optimize
+            key = (ji, ri, summarize())
+            if key in seen:
+                # get last_rock_count and last_height
+                lrc, lh = seen[key]
+                rem = T - rc  # remainder, how many rocks to go
+                rep = rem // (rc - lrc)  # repetition cycle
+                # offset to extrapolate the resulting height
+                # (based on current height difference and remainder)
+                # if it is the correct one -> could jump to end.
+                offset = rep * (height - lh)
+                # set rock_count respectively
+                rc += rep * (rc - lrc)
+                seen = {}  # delete the seen set
+            seen[key] = (rc, height)
+        else:
+            rock = moved
+# the current height plus the calculated offset would be the total height,
+# with the extrapolation correct.
+print(f"Part 2 result is: {int(height + offset)}, t = {pfc() - start2}")
