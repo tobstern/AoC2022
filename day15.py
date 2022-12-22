@@ -1,6 +1,5 @@
 from time import perf_counter as pfc
 import re
-import numpy as np
 
 day = "15"
 test = 0
@@ -19,31 +18,6 @@ SBs = [
     .strip()
     .splitlines()
 ]
-# print(SBs)
-
-
-def produce_fields(S, B, fields):
-    # start at sensor position -> delta = |Sx - Bx| + |Sy - By|
-    # fill current line (while loop - as long as delta > 1):
-    #   -> delta-i (left) & delta - i (right)
-    #   -> up as well as down
-    # manhatten distance
-    d = abs(S[0] - B[0]) + abs(S[1] - B[1])
-    dx, dy = d, d
-    # print(f"1st y: {S[1] - dy} and 2nd y: {S[1] + dy}")
-    # print("contains!") if (
-    #     S[1] + dy >= pos and S[1] - dy <= pos
-    # ) else None
-    ll = abs(pos - S[1])  # line length
-    if ll <= dx:
-        # print("Happend!")
-        fields |= set(np.arange(S[0] - dx + ll, S[0] + dx - ll + 1, 1))
-        # fields.update(
-        #     set(np.arange(S[0] - dx + ll, S[0] + dx - ll + 1, 1))
-        # )
-        # print(len(fields))
-    return fields
-
 
 # Part 1:
 start1 = pfc()
@@ -51,17 +25,124 @@ start1 = pfc()
 # create all reachable positions by sensors to beacons -> set()
 # check the line "2,000,000"
 pos = 10 if test else int(2e6)
-fields = set()
-for (S, B) in SBs:
-    # print(S, B)
-    fields = produce_fields(S, B, fields)
+intervals = []
+known = set()
+
+for S, B in SBs:
+    # start at sensor position -> delta = |Sx - Bx| + |Sy - By|
+    # fill current line (while loop - as long as delta > 1):
+    #   -> delta-i (left) & delta - i (right)
+    #   -> up as well as down
+    # manhatten distance
+    d = abs(S[0] - B[0]) + abs(S[1] - B[1])
+    o = d - abs(pos - S[1])  # offset = distance - line length
+
+    if o < 0:
+        continue
+
+    # boundary range where no other beacons can be
+    lx, hx = S[0] - o, S[0] + o
+
+    # save the known beacon position (line=pos) for later:
     if B[1] == pos:
-        fields -= {B[0]}
-    # fields -= {S[0]}
+        known.add(B[0])
 
-print(f"Part 1 result is: {len(fields)}, t = {pfc() - start1}")
-# 5441344(|5) too low
+    # intervals - points that can not exist (start and end point inclusive)
+    intervals.append((lx, hx))
 
-# Part 2:
-start2 = pfc()
-print(f"Part 2 result is: {day}, t = {pfc() - start2}")
+intervals.sort()
+
+# all non overlapping intervals
+q = []
+
+for lo, hi in intervals:
+    # if empty
+    if not q:
+        q.append([lo, hi])
+        continue
+    # now check overlaps
+    # look at last boundary in q
+    qlo, qhi = q[-1]
+    # now check if it is not contained in lo<->hi;
+    # +1 because doubly inclusive bounds in intervals
+    if lo > qhi + 1:
+        # if it is not contained already
+        q.append([lo, hi])
+        continue
+
+    # modify the upper bound in q to "new|greater" boundary
+    q[-1][1] = max(qhi, hi)
+
+cannot = set()
+for lo, hi in q:
+    for x in range(lo, hi + 1):
+        cannot.add(x)
+
+print(f"Part 1 result is: {len(cannot-known)}, t = {pfc() - start1}")
+
+
+# part 2:
+# SBs -> [..., [[Sx, Sy], [Bx, By]], ...]
+# create all reachable positions by sensors to beacons -> set()
+# check the line "2,000,000"
+M = 20 if test else int(4e6)
+
+for pos in range(M + 1):
+    intervals = []
+    for S, B in SBs:
+        # start at sensor position -> delta = |Sx - Bx| + |Sy - By|
+        # fill current line (while loop - as long as delta > 1):
+        #   -> delta-i (left) & delta - i (right)
+        #   -> up as well as down
+        # manhatten distance
+        d = abs(S[0] - B[0]) + abs(S[1] - B[1])
+        o = d - abs(pos - S[1])  # offset = distance - line length
+
+        if o < 0:
+            continue
+
+        # boundary range where no other beacons can be
+        lx, hx = S[0] - o, S[0] + o
+
+        # intervals - points that can not exist (start and end point inclusive)
+        intervals.append((lx, hx))
+
+    intervals.sort()
+
+    # all non overlapping intervals
+    q = []
+
+    for lo, hi in intervals:
+        # if empty
+        if not q:
+            q.append([lo, hi])
+            continue
+        # now check overlaps
+        # look at last boundary in q
+        qlo, qhi = q[-1]
+        # now check if it is not contained in lo<->hi;
+        # +1 because doubly inclusive bounds in intervals
+        if lo > qhi + 1:
+            # if it is not contained already
+            q.append([lo, hi])
+            continue
+
+        # modify the upper bound in q to "new|greater" boundary
+        q[-1][1] = max(qhi, hi)
+    # print(pos, q)
+
+    # linear search through found intervals:
+    x = 0
+    for lo, hi in q:
+        # if no next interval intersects -> finished
+        if x < lo:
+            exit(
+                f"Part 2 result is: {x * int(4e6) + pos}, t = {pfc() - start1}"
+            )
+        else:
+            # set x to the previous upper boundary + 1
+            # x = max(x, hi + 1)
+            x = hi + 1
+        if x > M:
+            # break if exceeding search boundary
+            break
