@@ -46,7 +46,7 @@ for valve in rates:
 
     # init visited
     visited = {valve}
-    # deque is like a stack (faster than list)
+    # deque is like opposed to a stack (faster than list)
     queue = deque([(0, valve)])
 
     while queue:
