@@ -1,3 +1,4 @@
+# - with precious help from https://www.youtube.com/watch?v=bLMj50cpOug :) - #
 from time import perf_counter as pfc
 from collections import deque
 
@@ -26,7 +27,6 @@ rates = {v[0]: v[1] for v in valves}
 # print(rates)
 
 # Part 1:
-# with precious help from https://www.youtube.com/watch?v=bLMj50cpOug :)
 start1 = pfc()
 # -- Depth First Search (DFS) -- #
 # smarter brute-force ;)
