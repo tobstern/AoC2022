@@ -1,7 +1,7 @@
 from time import perf_counter as pfc
 
 day = "22"
-test = 1
+test = 0
 if test:
     t = "test_"
 else:
