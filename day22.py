@@ -54,15 +54,13 @@ def is_wall(next_pos):
         return False
 
 
-def move(i, pos, direction):
+def move(i, cur_pos, cur_dir):
     # print(i, pos, direction)
     # can not move trough walls '#'
     # wrap around (if no wall there)
     # ' ' is no path - place-holder
     # instruction can be int() or char(R|L) -> changing the direction by 90°
-    cur_pos = pos[:]
     y, x = cur_pos[:]
-    cur_dir = direction
     if type(i) == str:
         # change direction by "90°" - select next direction in directions list
         cur_dir = directions[
@@ -180,15 +178,13 @@ res = sum([cur_dir, 1000 * (cur_pos[0] + 1), 4 * (cur_pos[1] + 1)])
 print(f"Part 1 result is: {res}, t = {pfc() - start1}")
 
 
-def move_cube(i, pos, direction, cur_face):
+def move_cube(i, cur_pos, cur_dir, cur_face):
     # print(i, pos, direction)
     # can not move trough walls '#'
     # wrap around (if no wall there)
     # ' ' is no path - place-holder
     # instruction can be int() or char(R|L) -> changing the direction by 90°
-    cur_pos = pos[:]
     y, x = cur_pos[:]
-    cur_dir = direction
     if type(i) == str:
         # change direction by "90°" - select next direction in directions list
         cur_dir = directions[
@@ -205,11 +201,13 @@ def move_cube(i, pos, direction, cur_face):
 
             # make amount of steps
             for _ in range(i):
-                if x + 1 > e:
+                if (x + 1 - s) % cube_max == 0:
                     # exceeded the line - wrap around !on cube!
                     # decision by modulo cube_max and check on which face
                     # and check cur_dir -> go to next face...
-                    if is_wall((y, s)):
+                    # cube = {cur_face: {cur_dir: (next_face, next_dir, start)}}
+                    cur_face, cur_dir, start = cube[cur_face][cur_dir]
+                    if is_wall((y, start)):
                         return (y, x), cur_dir, cur_face
                     # cur_pos = (y, s)
                     x = s
@@ -303,14 +301,46 @@ cur_pos = (0, [p for p, g in enumerate(grid[0]) if g != " "][0])
 cur_dir = 0  # start "right" facing
 cur_face = 1
 cube_max = 50 if not test else 4
-# current_face: {facing_direction:neighbouring face, ...}, ...
+# current_face: {current_direction:(next_face, next_direction, x|ystarting point), ...}, ...
+# cube = {cur_face: {cur_dir: (next_face, next_dir, start(y, x))}}
+# if abs(cur_dir - next_dir) % 2 != 0 -> swap the y,x coordinates
 cube = {
-    1: {0: 6, 1: 4, 2: 3, 3: 2},
-    2: {0: 3, 1: 5, 2: 6, 3: 1},
-    3: {0: 4, 1: 5, 2: 2, 3: 1},
-    4: {0: 6, 1: 5, 2: 3, 3: 1},
-    5: {0: 6, 1: 2, 2: 3, 3: 4},
-    6: {0: 1, 1: 2, 2: 5, 3: 4},
+    1: {
+        0: (6, 0, [0, 0]),
+        1: (4, 1, [0, 0]),
+        2: (3, 0, [100, -50]),
+        3: (2, 0, [150, 0]),
+    },
+    2: {
+        0: (5, 3, [100, -100]),
+        1: (6, 1, [-200, 100]),
+        2: (1, 1, [0, -100]),
+        3: (3, 3, [0, 0]),
+    },
+    3: {
+        0: (5, 0, [0, 0]),
+        1: (2, 1, [0, 0]),
+        2: (1, 0, [-100, 50]),
+        3: (4, 0, [50, -50]),
+    },
+    4: {
+        0: (6, 3, [-50, 50]),
+        1: (5, 1, [0, 0]),
+        2: (3, 1, [50, -50]),
+        3: (1, 3, [0, 0]),
+    },
+    5: {
+        0: (6, 2, [-100, 50]),
+        1: (2, 2, [150, -100]),
+        2: (3, 2, [0, 0]),
+        3: (4, 3, [0, 0]),
+    },
+    6: {
+        0: (5, 2, [100, -50]),
+        1: (4, 2, [-50, 50]),
+        2: (1, 2, [0, 0]),
+        3: (2, 3, [200, -100]),
+    },
 }
 
 for i in instructions:
