@@ -21,16 +21,10 @@ for i, l in enumerate(
                 line.append(char if char != " " else " ")
             grid.append(line)
     else:
-        # print(l.replace("R", ",R,").replace("L", ",L,"))
         l = l.replace("R", ",R,").replace("L", ",L,")
         instructions = [
             int(s) if s.isdigit() else s for s in l.split(",")
         ]
-# for l in grid:
-# print(len(l))
-# print("".join(l))
-# print([len(l) for l in grid])
-# print(instructions)
 # get all min & max positions
 all_rows = []
 for j, l in enumerate(grid):
@@ -39,8 +33,6 @@ for j, l in enumerate(grid):
         if g != "":
             row_poss.append(p)
     all_rows.append((row_poss[0], row_poss[-1]))
-# print(all_rows)
-# exit()
 
 # Part 1:
 start1 = pfc()
