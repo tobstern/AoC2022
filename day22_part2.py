@@ -1,7 +1,7 @@
 from time import perf_counter as pfc
 
 day = "22"
-test = 1
+test = 0
 if test:
     t = "test_"
 else:
@@ -22,9 +22,7 @@ for i, l in enumerate(
             grid.append(line)
     else:
         l = l.replace("R", ",R,").replace("L", ",L,")
-        instructions = [
-            int(s) if s.isdigit() else s for s in l.split(",")
-        ]
+        instructions = [int(s) if s.isdigit() else s for s in l.split(",")]
 # for l in grid:
 # print(len(l))
 # print("".join(l))
@@ -50,8 +48,18 @@ def is_wall(next_pos):
         return False
 
 
-def move_cube(i, cur_pos, cur_dir, cur_face):
-    # print(i, pos, direction)
+def move_cube(i, cur_pos, cur_dir, cur_face, last_o):
+    print(
+        "initial set:",
+        "steps:",
+        i,
+        "pos:",
+        cur_pos,
+        "dir:",
+        cur_dir,
+        "face:",
+        cur_face,
+    )
     # can not move trough walls '#'
     # wrap around (if no wall there)
     # ' ' is no path - place-holder
@@ -59,9 +67,7 @@ def move_cube(i, cur_pos, cur_dir, cur_face):
     y, x = cur_pos[:]
     if type(i) == str:
         # change direction by "90°" - select next direction in directions list
-        cur_dir = directions[
-            (cur_dir + 1 if i == "R" else cur_dir - 1) % 4
-        ]
+        cur_dir = directions[(cur_dir + 1 if i == "R" else cur_dir - 1) % 4]
         return cur_pos, cur_dir, cur_face
 
     elif type(i) == int:
@@ -72,18 +78,27 @@ def move_cube(i, cur_pos, cur_dir, cur_face):
             s, e = line[0], line[-1]
 
             # make amount of steps
-            for _ in range(i):
-                if (x + 1 - s) % cube_max == 0:
+            for j in range(i):
+                if x + 1 > last_o[1] + cube_max:
+                    # if (x + 1) % cube_max == 0:
                     # exceeded the line - wrap around !on cube!
-                    # decision by modulo cube_max and check on which face
-                    # and check cur_dir -> go to next face...
-                    # cube = {cur_face: {cur_dir: (next_face, next_dir, start)}}
-                    cur_face, cur_dir, start = cube[cur_face][cur_dir]
-                    if is_wall((y, start)):
+                    # cube = {cur_face: {cur_dir: (next_face, next_dir, offset=(y, x))}}
+                    next_face, next_dir, offset = cube[cur_face][cur_dir]
+                    if abs(cur_dir - next_dir) % 2 != 0:
+                        # swap the coordinates (y, x)
+                        temp_ = y
+                        y = x
+                        x = temp_
+                    y_ = y + offset[0]
+                    x_ = x + offset[1]
+                    print(y_, x_)
+                    if is_wall((y_, x_)):
                         return (y, x), cur_dir, cur_face
                     # cur_pos = (y, s)
-                    x = s
-                    continue
+                    y, x = y_, x_
+                    # switch now to the next face
+                    return move_cube(i - j, (y, x), next_dir, next_face, offset)
+                    # continue
                 if is_wall((y, x + 1)):
                     return (y, x), cur_dir, cur_face
                 # after all checks done -> assign next position
@@ -96,14 +111,26 @@ def move_cube(i, cur_pos, cur_dir, cur_face):
             s, e = line[0], line[-1]
 
             # make amount of steps
-            for _ in range(i):
-                if x - 1 < s:
-                    # exceeded the line - wrap around
-                    if is_wall((y, e)):
+            for j in range(i):
+                if x - 1 < last_o[1] - cube_max:
+                    # if (x - 1) % cube_max == 0:
+                    # exceeded the line - wrap around !on cube!
+                    # cube = {cur_face: {cur_dir: (next_face, next_dir, offset=(y, x))}}
+                    next_face, next_dir, offset = cube[cur_face][cur_dir]
+                    if abs(cur_dir - next_dir) % 2 != 0:
+                        # swap the coordinates (y, x)
+                        temp_ = y
+                        y = x
+                        x = temp_
+                    y_ = y + offset[0]
+                    x_ = x + offset[1]
+                    if is_wall((y_, x_)):
                         return (y, x), cur_dir, cur_face
-                    # cur_pos = (y, e)
-                    x = e
-                    continue
+                    # cur_pos = (y, s)
+                    y, x = y_, x_
+                    # switch now to the next face
+                    return move_cube(i - j, (y, x), next_dir, next_face, offset)
+                    # continue
                 if is_wall((y, x - 1)):
                     return (y, x), cur_dir, cur_face
                 # after all checks done -> assign next position
@@ -121,14 +148,27 @@ def move_cube(i, cur_pos, cur_dir, cur_face):
             s, e = line[0], line[-1]
 
             # make amount of steps
-            for _ in range(i):
-                if y + 1 > e:
-                    # exceeded the line - wrap around
-                    if is_wall((s, x)):
+            for j in range(i):
+                if y + 1 > last_o[0] + cube_max:
+                    # if (y + 1) % cube_max == 0:
+                    # exceeded the line - wrap around !on cube!
+                    # cube = {cur_face: {cur_dir: (next_face, next_dir, offset=(y, x))}}
+                    next_face, next_dir, offset = cube[cur_face][cur_dir]
+                    if abs(cur_dir - next_dir) % 2 != 0:
+                        # swap the coordinates (y, x)
+                        temp_ = y
+                        y = x
+                        x = temp_
+                    y_ = y + offset[0]
+                    x_ = x + offset[1]
+                    print(y_, x_)
+                    if is_wall((y_, x_)):
                         return (y, x), cur_dir, cur_face
-                    # cur_pos = (s, x)
-                    y = s
-                    continue
+                    # cur_pos = (y, s)
+                    y, x = y_, x_
+                    # switch now to the next face
+                    return move_cube(i - j, (y, x), next_dir, next_face, offset)
+                    # continue
                 if is_wall((y + 1, x)):
                     return (y, x), cur_dir, cur_face
                 # after all checks done -> assign next position
@@ -148,14 +188,28 @@ def move_cube(i, cur_pos, cur_dir, cur_face):
             m = e - s  # modulus
 
             # make amount of steps
-            for _ in range(i):
-                if y - 1 < s:
-                    # exceeded the line - wrap around
-                    if is_wall((e, x)):
-                        return (y, x), cur_dir, cur_face
-                    # cur_pos = (e, x)
-                    y = e
-                    continue
+            for j in range(i):
+                if y - 1 < last_o[0] - cube_max:
+                    # if (y - 1) % cube_max == 0:
+                    # exceeded the line - wrap around !on cube faces!
+                    # cube = {cur_face: {cur_dir: (next_face, next_dir, offset=(y, x))}}
+                    next_face, next_dir, offset = cube[cur_face][cur_dir]
+                    if abs(cur_dir - next_dir) % 2 != 0:
+                        # swap the coordinates (y, x)
+                        temp_ = y
+                        y = x
+                        x = temp_
+                    y_ = y + offset[0]
+                    x_ = x + offset[1]
+                    print(y_, x_)
+                    if is_wall((y_, x_)):
+                        return (y, x), cur_dir, next_face
+                    # cur_pos = (y, s)
+                    y, x = y_, x_
+                    # switch now to the next face
+                    return move_cube(i - j, (y, x), next_dir, cur_face, offset)
+                    # continue
+                print(cur_face, y - 1, x)
                 if is_wall((y - 1, x)):
                     return (y, x), cur_dir, cur_face
                 # after all checks done -> assign next position
@@ -182,45 +236,45 @@ cube = {
     1: {
         0: (6, 0, [0, 0]),
         1: (4, 1, [0, 0]),
-        2: (3, 0, [100, -50]),
-        3: (2, 0, [150, 0]),
+        2: (3, 0, [2 * cube_max - 1, -cube_max + 1]),
+        3: (2, 0, [2 * cube_max - 1, 0]),
     },
     2: {
-        0: (5, 3, [100, -100]),
-        1: (6, 1, [-200, 100]),
-        2: (1, 1, [0, -100]),
+        0: (5, 3, [2 * cube_max - 1, -2 * cube_max + 1]),
+        1: (6, 1, [-4 * cube_max + 1, 2 * cube_max - 1]),
+        2: (1, 1, [0, -2 * cube_max + 1]),
         3: (3, 3, [0, 0]),
     },
     3: {
         0: (5, 0, [0, 0]),
         1: (2, 1, [0, 0]),
-        2: (1, 0, [-100, 50]),
-        3: (4, 0, [50, -50]),
+        2: (1, 0, [-2 * cube_max + 1, cube_max - 1]),
+        3: (4, 0, [cube_max - 1, -cube_max + 1]),
     },
     4: {
-        0: (6, 3, [-50, 50]),
+        0: (6, 3, [-cube_max + 1, cube_max - 1]),
         1: (5, 1, [0, 0]),
-        2: (3, 1, [50, -50]),
+        2: (3, 1, [cube_max - 1, -cube_max + 1]),
         3: (1, 3, [0, 0]),
     },
     5: {
-        0: (6, 2, [-100, 50]),
-        1: (2, 2, [150, -100]),
+        0: (6, 2, [-2 * cube_max + 1, cube_max - 1]),
+        1: (2, 2, [2 * cube_max - 1, -2 * cube_max + 1]),
         2: (3, 2, [0, 0]),
         3: (4, 3, [0, 0]),
     },
     6: {
-        0: (5, 2, [100, -50]),
-        1: (4, 2, [-50, 50]),
+        0: (5, 2, [2 * cube_max - 1, -cube_max + 1]),
+        1: (4, 2, [-cube_max + 1, cube_max - 1]),
         2: (1, 2, [0, 0]),
-        3: (2, 3, [200, -100]),
+        3: (2, 3, [4 * cube_max - 1, -2 * cube_max + 1]),
     },
 }
 
 for i in instructions:
     # start at (top left -> get pos after empty space), facing right
     cur_pos, cur_dir, cur_face = move_cube(
-        i, cur_pos, cur_dir, cur_face
+        i, cur_pos, cur_dir, cur_face, [0, 0]
     )
 
 res = sum([cur_dir, 1000 * (cur_pos[0] + 1), 4 * (cur_pos[1] + 1)])
