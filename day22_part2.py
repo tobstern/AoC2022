@@ -1,6 +1,12 @@
 from time import perf_counter as pfc
 
-d = "./puzzle_inputs/day22.txt"
+test = 1
+if test:
+    t = "test_"
+else:
+    t = ""
+
+d = "./puzzle_inputs/" + t + "day22.txt"
 for i, l in enumerate(open(d, "r").read().split("\n\n")):
 
     # grid and instructions
@@ -18,7 +24,7 @@ for i, l in enumerate(open(d, "r").read().split("\n\n")):
         instructions = [int(s) if s.isdigit() else s for s in l.split(",")]
 
 # save faces seperately:
-cube_max = 50
+cube_max = 50 if not test else 4
 
 fd = {i: [] for i in range(1, 7)}
 
@@ -26,20 +32,35 @@ for i, line in enumerate(grid):
 
     for j in range(0, len(line), cube_max):
 
-        if grid[i][j] != " ":
-            # print(i, j)
-            if i < 50 and j == 50:
+        if not test and grid[i][j] != " ":
+
+            if i < cube_max and j == cube_max:
                 fd[1].append(line[j : j + cube_max])
-            elif i < 50 and j == 100:
+            elif i < cube_max and j == 2 * cube_max:
                 fd[6].append(line[j : j + cube_max])
-            elif 50 <= i < 100 and j == 50:
+            elif cube_max <= i < 2 * cube_max and j == cube_max:
                 fd[4].append(line[j : j + cube_max])
-            elif 100 <= i < 150 and j == 0:
+            elif 2 * cube_max <= i < 3 * cube_max and j == 0:
                 fd[3].append(line[j : j + cube_max])
-            elif 100 <= i < 150 and j == 50:
+            elif 2 * cube_max <= i < 3 * cube_max and j == cube_max:
                 fd[5].append(line[j : j + cube_max])
-            elif 150 <= i < 200 and j == 0:
+            elif 3 * cube_max <= i < 4 * cube_max and j == 0:
                 fd[2].append(line[j : j + cube_max])
+
+        if test and grid[i][j] != " ":
+
+            if i < cube_max and j == 2 * cube_max:
+                fd[1].append(line[j : j + cube_max])
+            elif cube_max <= i < 2 * cube_max and j == 0:
+                fd[2].append(line[j : j + cube_max])
+            elif cube_max <= i < 2 * cube_max and j == cube_max:
+                fd[3].append(line[j : j + cube_max])
+            elif cube_max <= i < 2 * cube_max and j == 2 * cube_max:
+                fd[4].append(line[j : j + cube_max])
+            elif 2 * cube_max <= i < 3 * cube_max and j == 2 * cube_max:
+                fd[5].append(line[j : j + cube_max])
+            elif 2 * cube_max <= i < 3 * cube_max and j == 3 * cube_max:
+                fd[6].append(line[j : j + cube_max])
 
 
 # print([len(fd[i]) for i in range(1, 7)])
@@ -124,16 +145,35 @@ cube = {
     6: {0: (5, 2), 1: (4, 2), 2: (1, 2), 3: (2, 3)},
 }
 
+
 # all up-left corners:
 corners = {
-    1: (0, 50),
-    2: (150, 0),
-    3: (100, 0),
-    4: (50, 50),
-    5: (100, 50),
-    6: (0, 100),
+    1: (0, cube_max),
+    2: (3 * cube_max, 0),
+    3: (2 * cube_max, 0),
+    4: (cube_max, cube_max),
+    5: (2 * cube_max, cube_max),
+    6: (0, 2 * cube_max),
 }
 
+if test:
+    cube = {
+        1: {0: (6, 2), 1: (4, 1), 2: (3, 1), 3: (2, 1)},
+        2: {0: (3, 0), 1: (5, 3), 2: (6, 3), 3: (1, 1)},
+        3: {0: (4, 0), 1: (5, 0), 2: (2, 2), 3: (1, 0)},
+        4: {0: (6, 1), 1: (5, 1), 2: (3, 2), 3: (1, 3)},
+        5: {0: (6, 0), 1: (2, 3), 2: (3, 3), 3: (4, 3)},
+        6: {0: (1, 2), 1: (2, 0), 2: (5, 2), 3: (4, 2)},
+    }
+
+    corners = {
+        1: (0, 2 * cube_max),
+        2: (cube_max, 0),
+        3: (cube_max, cube_max),
+        4: (cube_max, 2 * cube_max),
+        5: (2 * cube_max, 2 * cube_max),
+        6: (2 * cube_max, 3 * cube_max),
+    }
 # slice each cube face and save as list of faces (each its grid)
 # loop through grid @(cur_dir, cur_face) - watch out for "#" or limit of face
 # -> wrap to next_face, next_dir
@@ -444,7 +484,6 @@ for c, i in enumerate(instructions):
                             cur_pos,
                         )
                         break
-
                     y -= 1
 
             # steps are done - next instruction!
